@@ -1,0 +1,28 @@
+name: Video Upload Bot
+
+on:
+  repository_dispatch:
+    types: [upload_video]
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Create video page
+        run: |
+          FILENAME=${{ github.event.client_payload.filename }}
+          VIDEOLINK=${{ github.event.client_payload.videolink }}
+
+          mkdir -p videos/$FILENAME
+          cp template.html videos/$FILENAME/index.html
+          sed -i "s|VIDEO_LINK_HERE|$VIDEOLINK|g" videos/$FILENAME/index.html
+
+      - name: Commit changes
+        run: |
+          git config user.name "video-bot"
+          git config user.email "bot@github.com"
+          git add .
+          git commit -m "Uploaded video page"
+          git push
